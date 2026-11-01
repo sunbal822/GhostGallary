@@ -1,0 +1,1652 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#020306">
+<title>Ghost Gallery — Enter the Unknown</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,400;1,500&family=Karla:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #020306;
+  --mist: #f2f0fc;
+  --gold: #d8c292;
+  --spirit: #d0e4ff;
+  --spirit-cyan: #7fffd4;
+  --silver: rgba(230, 235, 245, 0.45);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html {
+  background: #000;
+  color: var(--mist);
+  font-family: 'Karla', system-ui, sans-serif;
+  overflow-x: hidden;
+  scroll-behavior: auto;
+}
+body {
+  background: #000;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Master Fixed Viewport with 3D Perspective Rig */
+#viewport-world {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+  background: #020306;
+  z-index: 1;
+  perspective: 1200px;
+  perspective-origin: 50% 50%;
+}
+
+/* 3D Camera Rig: Strictly controlled by scroll progress only (NO hover tilting) */
+#camera-rig {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+/* Global Navigation */
+.site-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 5vw;
+  background: linear-gradient(180deg, rgba(2,3,6,0.92) 0%, rgba(2,3,6,0.3) 70%, transparent 100%);
+  pointer-events: auto;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #fff;
+  text-decoration: none;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1.45rem;
+  letter-spacing: .06em;
+  text-shadow: 0 0 16px rgba(255,255,255,0.4);
+}
+.brand-mark {
+  width: 20px;
+  height: 24px;
+  background: linear-gradient(160deg, #fff, #99a5b5);
+  clip-path: path("M10 0C3.5 0 0.8 5.5 0.8 11v13l3.6-3.6 2.8 3.6 2.8-3.6 2.8 3.6 3.6-3.6V11C19.2 5.5 16.5 0 10 0Z");
+  filter: drop-shadow(0 0 8px rgba(255,255,255,0.8));
+}
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: clamp(18px, 3.5vw, 42px);
+}
+.nav-links a, .nav-btn {
+  color: #d8dbe2;
+  text-decoration: none;
+  font-size: 0.88rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  opacity: .75;
+  transition: opacity .3s, text-shadow .3s;
+}
+.nav-links a:hover, .nav-btn:hover {
+  opacity: 1;
+  text-shadow: 0 0 14px rgba(255,255,255,0.85);
+}
+
+/* Base Scene Plates (High-res 2560x1440 background layers, stationary on hover) */
+.scene-plate {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  will-change: transform, opacity;
+  transform-style: preserve-3d;
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: high-quality;
+}
+
+/* ==============================================================
+   ACT 1: EXTERIOR CASTLE SCENE
+   ============================================================== */
+#scene-exterior {
+  background-image: url('/static/img/exterior.jpg');
+  transform-origin: 78.8% 36.6%; /* Lit castle window */
+  z-index: 10;
+}
+
+/* Ambient Drifting Fog Layers */
+.fog-layer {
+  position: absolute;
+  inset: 0;
+  background: url('/static/img/fog.png') repeat-x;
+  mix-blend-mode: screen;
+  pointer-events: none;
+  will-change: background-position, opacity;
+}
+.fog-1 {
+  bottom: -4%;
+  height: 52%;
+  background-size: 1600px 100%;
+  opacity: 0.45;
+  animation: fogDriftA 160s linear infinite;
+}
+.fog-2 {
+  bottom: 0;
+  height: 42%;
+  background-size: 2200px 100%;
+  opacity: 0.28;
+  animation: fogDriftB 220s linear infinite;
+}
+@keyframes fogDriftA { to { background-position-x: -1600px; } }
+@keyframes fogDriftB { from { background-position-x: -2200px; } to { background-position-x: 0; } }
+
+/* Glowing window beacon at castle */
+.window-beacon {
+  position: absolute;
+  left: 78.8%;
+  top: 36.6%;
+  width: 20px;
+  height: 22px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 20%, #ffeaa8 55%, transparent 75%);
+  filter: drop-shadow(0 0 16px rgba(255, 235, 170, 0.95)) drop-shadow(0 0 35px rgba(255,255,255,0.7));
+  animation: beaconPulse 2.6s ease-in-out infinite alternate;
+  pointer-events: none;
+  z-index: 12;
+}
+@keyframes beaconPulse {
+  0% { transform: translate(-50%, -50%) scale(0.95); opacity: 0.7; }
+  100% { transform: translate(-50%, -50%) scale(1.35); opacity: 1; }
+}
+
+/* Hero Center Card */
+.hero-card {
+  position: absolute;
+  left: 50%;
+  top: 54%;
+  transform: translate(-50%, -50%);
+  width: min(640px, 86vw);
+  text-align: center;
+  padding: 42px 46px 36px;
+  border: 1px solid rgba(240, 240, 255, 0.42);
+  border-radius: 10px;
+  background: linear-gradient(145deg, rgba(8, 10, 14, 0.78), rgba(22, 26, 36, 0.45));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.06), 0 0 70px rgba(255,255,255,0.08), inset 0 0 45px rgba(255,255,255,0.04);
+  pointer-events: auto;
+  z-index: 15;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+.hero-card .star-decor {
+  display: inline-block;
+  margin-bottom: 12px;
+  font-size: 1.15rem;
+  color: #fff;
+  text-shadow: 0 0 12px #fff, 0 0 22px var(--gold);
+}
+.hero-card h1 {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(2rem, 4.4vw, 3.4rem);
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+  color: #ffffff;
+  text-shadow: 0 0 35px rgba(255,255,255,0.3);
+}
+.hero-card .hero-sub {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-style: italic;
+  font-size: clamp(1.15rem, 1.8vw, 1.45rem);
+  color: #dcdce6;
+  margin: 14px auto 0;
+  opacity: 0.92;
+}
+.hero-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 26px;
+  padding: 12px 32px;
+  border: 1px solid rgba(245, 245, 255, 0.65);
+  border-radius: 999px;
+  background: rgba(8, 10, 15, 0.65);
+  color: #fff;
+  text-decoration: none;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1.15rem;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: background 0.4s, box-shadow 0.4s;
+}
+.hero-btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+  box-shadow: 0 0 30px rgba(255, 255, 255, 0.35);
+}
+
+/* Scroll Down Prompt */
+.scroll-indicator {
+  position: absolute;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.72rem;
+  letter-spacing: 0.28em;
+  color: #cfd4dc;
+  opacity: 0.75;
+  pointer-events: none;
+  z-index: 16;
+  transition: opacity 0.4s;
+}
+.scroll-indicator span {
+  animation: scrollTextPulse 2.4s ease-in-out infinite;
+}
+.scroll-indicator .scroll-bar {
+  width: 1px;
+  height: 38px;
+  background: linear-gradient(to bottom, #fff, rgba(255,255,255,0.05));
+  animation: scrollLine 2.2s ease-in-out infinite;
+}
+@keyframes scrollLine {
+  0% { transform: scaleY(0); transform-origin: top; }
+  50% { transform: scaleY(1); transform-origin: top; }
+  50.1% { transform: scaleY(1); transform-origin: bottom; }
+  100% { transform: scaleY(0); transform-origin: bottom; }
+}
+@keyframes scrollTextPulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; text-shadow: 0 0 10px rgba(255,255,255,0.6); }
+}
+
+/* ==============================================================
+   AUTHENTIC COMPANION PHANTOM (FOLLOWS MOUSE WITH NO BG MOVEMENT)
+   ============================================================== */
+#companion-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 55;
+}
+
+/* Optical portal flash for window crossing */
+#portal-flash {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at 78.8% 36.6%, rgba(255,255,255,0.95) 0%, rgba(210,230,255,0.65) 25%, rgba(10,14,24,0.92) 75%, #020306 100%);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 45;
+  transition: opacity 0.08s;
+}
+
+/* ==============================================================
+   ACT 2: DINING HALL WITH LIVING SPIRIT EFFECTS
+   ============================================================== */
+#scene-dining {
+  background-image: url('/static/img/dining.jpg');
+  transform-origin: 20% 32%;
+  z-index: 20;
+  opacity: 0;
+  pointer-events: none;
+}
+#scene-dining.active {
+  pointer-events: auto;
+}
+
+/* Living Candlelight Flicker Over Candelabra */
+.candelabra-flicker {
+  position: absolute;
+  left: 50%;
+  top: 56.5%;
+  width: 120px;
+  height: 90px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 205, 120, 0.55) 0%, rgba(255, 170, 70, 0.25) 40%, transparent 70%);
+  mix-blend-mode: screen;
+  pointer-events: none;
+  animation: candleGlow 0.18s ease-in-out infinite alternate;
+  z-index: 24;
+}
+.chandelier-flicker {
+  position: absolute;
+  left: 50%;
+  top: 13%;
+  width: 260px;
+  height: 160px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(255, 220, 140, 0.28) 0%, rgba(255, 180, 80, 0.12) 50%, transparent 80%);
+  mix-blend-mode: screen;
+  pointer-events: none;
+  animation: candleGlow 0.24s ease-in-out infinite alternate;
+  z-index: 24;
+}
+@keyframes candleGlow {
+  0% { transform: translate(-50%, -50%) scale(0.96); opacity: 0.78; }
+  50% { transform: translate(-50.5%, -49.5%) scale(1.03); opacity: 0.95; }
+  100% { transform: translate(-49.5%, -50.5%) scale(0.98); opacity: 0.84; }
+}
+
+/* Dedicated Living Ethereal Canvases for Each Spirit */
+#spirits-live-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 25;
+}
+
+/* Header in Dining Room */
+.dining-header {
+  position: absolute;
+  top: 9vh;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  width: min(880px, 92vw);
+  pointer-events: none;
+  z-index: 28;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+.dining-header h2 {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(2rem, 3.8vw, 3.2rem);
+  color: #fff;
+  letter-spacing: 0.02em;
+  text-shadow: 0 0 28px rgba(255,255,255,0.45), 0 2px 14px #000;
+}
+.dining-header p {
+  font-size: clamp(0.95rem, 1.4vw, 1.15rem);
+  color: #d2d8e4;
+  margin-top: 8px;
+  letter-spacing: 0.04em;
+  text-shadow: 0 1px 8px #000;
+}
+
+/* Hotspots on the 5 Famous Spirits (Completely stationary, no scaling on hover) */
+.ghost-hotspot {
+  position: absolute;
+  border-radius: 14px;
+  cursor: pointer;
+  pointer-events: auto;
+  border: 1px solid transparent;
+  background: transparent;
+  transition: border-color 0.3s, box-shadow 0.3s;
+  z-index: 26;
+  outline: none;
+}
+.ghost-hotspot:hover, .ghost-hotspot:focus-visible {
+  border-color: rgba(220, 235, 255, 0.45);
+  box-shadow: 0 0 30px rgba(180, 215, 255, 0.35), inset 0 0 20px rgba(200, 230, 255, 0.15);
+}
+
+/* Specific ghost hotspot boundaries */
+#spot-einstein { left: 6%; top: 32%; width: 19%; height: 54%; }
+#spot-cleopatra { left: 23%; top: 35%; width: 17%; height: 48%; }
+#spot-shakespeare { left: 43%; top: 30%; width: 17%; height: 48%; }
+#spot-curie { left: 63%; top: 35%; width: 16%; height: 48%; }
+#spot-tesla { left: 77%; top: 36%; width: 19%; height: 54%; }
+
+/* Floating Spirit Badge on Hover */
+.ghost-badge {
+  position: absolute;
+  bottom: -32px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(10, 14, 22, 0.92);
+  border: 1px solid rgba(220, 230, 255, 0.5);
+  backdrop-filter: blur(8px);
+  color: #fff;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1.05rem;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.7), 0 0 20px rgba(180,210,255,0.3);
+}
+.ghost-hotspot:hover .ghost-badge,
+.ghost-hotspot:focus-visible .ghost-badge {
+  opacity: 1;
+}
+
+/* Whispering Quote Banner that Floats Above Spirit on Hover */
+.whisper-quote {
+  position: absolute;
+  top: -46px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 7px 18px;
+  border-radius: 8px;
+  background: rgba(8, 11, 18, 0.92);
+  border: 1px solid rgba(230, 235, 255, 0.45);
+  backdrop-filter: blur(10px);
+  color: #f0f4ff;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-style: italic;
+  font-size: 1.05rem;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.8), 0 0 25px rgba(200,225,255,0.25);
+  z-index: 30;
+}
+.ghost-hotspot:hover .whisper-quote,
+.ghost-hotspot:focus-visible .whisper-quote {
+  opacity: 1;
+}
+
+/* Ethereal Glow Pulse on Spirit */
+.spirit-aura {
+  position: absolute;
+  inset: -10%;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+  mix-blend-mode: screen;
+  transition: opacity 0.4s;
+}
+.ghost-hotspot:hover .spirit-aura {
+  opacity: 0.75;
+  animation: auraFlicker 2s ease-in-out infinite alternate;
+}
+@keyframes auraFlicker {
+  0% { transform: scale(0.96); opacity: 0.55; }
+  100% { transform: scale(1.05); opacity: 0.9; }
+}
+#spot-einstein .spirit-aura { background: radial-gradient(circle, rgba(160, 210, 255, 0.45), transparent 70%); }
+#spot-cleopatra .spirit-aura { background: radial-gradient(circle, rgba(255, 215, 120, 0.45), transparent 70%); }
+#spot-shakespeare .spirit-aura { background: radial-gradient(circle, rgba(210, 195, 255, 0.45), transparent 70%); }
+#spot-curie .spirit-aura { background: radial-gradient(circle, rgba(100, 255, 218, 0.5), transparent 70%); }
+#spot-tesla .spirit-aura { background: radial-gradient(circle, rgba(130, 220, 255, 0.5), transparent 70%); }
+
+/* Quick Navigation Tray at Bottom of Dining */
+.dining-dock {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 12px;
+  padding: 8px 18px;
+  border-radius: 999px;
+  background: rgba(10, 12, 18, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(12px);
+  z-index: 30;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  pointer-events: auto;
+}
+.dock-chip {
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: #cfd6e4;
+  font-family: 'Karla', sans-serif;
+  font-size: 0.86rem;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background 0.3s, color 0.3s, border-color 0.3s, box-shadow 0.3s;
+}
+.dock-chip:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  border-color: rgba(255,255,255,0.4);
+  box-shadow: 0 0 16px rgba(255,255,255,0.25);
+}
+
+/* ==============================================================
+   ACT 3: THE GRAVEYARD (WITH LIVING WILL-O'-THE-WISPS)
+   ============================================================== */
+#scene-graveyard {
+  background-image: url('/static/img/graveyard.jpg');
+  transform-origin: 50% 50%;
+  z-index: 35;
+  opacity: 0;
+  pointer-events: none;
+}
+#scene-graveyard.active {
+  pointer-events: auto;
+}
+
+/* Interactive Graveyard Ectoplasm / Will-o'-the-Wisp Canvas */
+#graveyard-live-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 36;
+}
+
+/* Graveyard Center Prompt */
+.graveyard-panel {
+  position: absolute;
+  left: 50%;
+  top: 48%;
+  transform: translate(-50%, -50%);
+  width: min(680px, 90vw);
+  text-align: center;
+  padding: 44px 44px 40px;
+  border: 1px solid rgba(220, 230, 255, 0.3);
+  border-radius: 12px;
+  background: linear-gradient(150deg, rgba(8, 10, 15, 0.88), rgba(20, 24, 32, 0.68));
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 0 80px rgba(0, 0, 0, 0.95), 0 0 50px rgba(180, 210, 255, 0.08);
+  pointer-events: auto;
+  z-index: 38;
+}
+.graveyard-panel h2 {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(2.2rem, 4.6vw, 3.6rem);
+  line-height: 1.1;
+  color: #ffffff;
+  margin-bottom: 14px;
+  text-shadow: 0 0 35px rgba(255, 255, 255, 0.28);
+}
+.graveyard-panel p {
+  font-size: clamp(1rem, 1.6vw, 1.2rem);
+  color: #cbd3e0;
+  line-height: 1.55;
+  max-width: 44ch;
+  margin: 0 auto 30px;
+}
+.graveyard-choices {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.grave-btn {
+  font: 600 1.05rem 'Karla', sans-serif;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 999px;
+  padding: 13px 28px;
+  cursor: pointer;
+  transition: background 0.3s, color 0.3s, border-color 0.3s, box-shadow 0.3s;
+  letter-spacing: 0.04em;
+}
+.grave-btn:hover {
+  background: #ffffff;
+  color: #06080d;
+  border-color: #ffffff;
+  box-shadow: 0 0 40px rgba(255, 255, 255, 0.6);
+}
+.grave-btn.primary {
+  background: rgba(220, 235, 255, 0.18);
+  border-color: rgba(220, 235, 255, 0.6);
+}
+.grave-btn.primary:hover {
+  background: #d6e2f8;
+  color: #080b12;
+  box-shadow: 0 0 45px rgba(200, 225, 255, 0.7);
+}
+
+/* Modals / Dialogs */
+dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #0d0f17;
+  color: var(--mist);
+  border: 1px solid rgba(220, 230, 255, 0.35);
+  border-radius: 18px;
+  padding: 2.2rem 2.4rem;
+  width: min(540px, 92vw);
+  text-align: center;
+  box-shadow: 0 0 100px rgba(0, 0, 0, 0.95), 0 0 60px rgba(180, 210, 255, 0.15);
+  z-index: 100;
+}
+dialog::backdrop {
+  background: rgba(3, 4, 8, 0.88);
+  backdrop-filter: blur(8px);
+}
+dialog h3 {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-weight: 400;
+  font-size: 2.1rem;
+  margin: 0.5rem 0 0.8rem;
+  color: #fff;
+  letter-spacing: 0.02em;
+}
+dialog p {
+  line-height: 1.6;
+  margin: 0.6rem 0;
+  opacity: 0.88;
+  font-size: 1.02rem;
+}
+dialog p.epi {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-style: italic;
+  font-size: 1.25rem;
+  color: var(--gold);
+  margin-top: 1rem;
+  opacity: 1;
+}
+dialog form {
+  display: flex;
+  gap: 0.8rem;
+  margin-top: 1.4rem;
+}
+dialog input {
+  flex: 1;
+  font: inherit;
+  padding: 0.85rem 1.2rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: #06080e;
+  color: #fff;
+  outline: none;
+}
+dialog input:focus {
+  border-color: #fff;
+  box-shadow: 0 0 14px rgba(255,255,255,0.3);
+}
+dialog button.go {
+  font: 600 1rem 'Karla', sans-serif;
+  border: 0;
+  border-radius: 10px;
+  padding: 0.85rem 1.4rem;
+  background: #ffffff;
+  color: #06080e;
+  cursor: pointer;
+  transition: box-shadow 0.3s;
+}
+dialog button.go:hover {
+  box-shadow: 0 0 25px rgba(255,255,255,0.7);
+}
+.dlg-close {
+  position: absolute;
+  right: 16px;
+  top: 14px;
+  background: none;
+  border: 0;
+  color: #a0a6b5;
+  font-size: 1.4rem;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.dlg-close:hover {
+  color: #fff;
+}
+#status {
+  min-height: 1.4em;
+  margin-top: 0.8rem;
+  font-size: 0.95rem;
+  color: #b0c4de;
+}
+
+.ghost-card-render {
+  margin: 0 auto 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  filter: drop-shadow(0 0 20px rgba(180, 210, 255, 0.5));
+}
+.ghost-card-render svg {
+  width: 140px;
+  height: auto;
+}
+
+/* Tall Scroll Container */
+#scroll-track {
+  position: relative;
+  width: 100%;
+  height: 480vh;
+  pointer-events: none;
+}
+
+@media(max-width: 768px) {
+  .hero-card { padding: 32px 24px; top: 58%; }
+  .dining-header { top: 7vh; }
+  .dining-dock { bottom: 12px; padding: 6px 12px; gap: 6px; }
+  .dock-chip { font-size: 0.78rem; padding: 5px 10px; }
+  .ghost-badge { display: none; }
+  .whisper-quote { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div id="viewport-world">
+  <!-- 3D Camera Rig: Moves ONLY on scroll, never on mouse hover -->
+  <div id="camera-rig">
+
+    <!-- ========================================================= -->
+    <!-- ACT 1: EXTERIOR CASTLE SCENE                              -->
+    <!-- ========================================================= -->
+    <div class="scene-plate" id="scene-exterior">
+      <div class="fog-layer fog-1"></div>
+      <div class="fog-layer fog-2"></div>
+      <div class="window-beacon" aria-hidden="true"></div>
+
+      <!-- Clean Dynamic Hero Card -->
+      <div class="hero-card" id="heroCard">
+        <span class="star-decor" aria-hidden="true">✦</span>
+        <h1>Where all tales come to an end…</h1>
+        <p class="hero-sub">or perhaps, just the beginning.</p>
+        <button class="hero-btn" id="exploreBtn" onclick="scrollToDining()">
+          <span aria-hidden="true">✦</span> Search More →
+        </button>
+      </div>
+
+      <div class="scroll-indicator" id="scrollIndicator">
+        <span>SCROLL TO ASCEND</span>
+        <div class="scroll-bar"></div>
+      </div>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- ACT 2: DINING HALL WITH THE 5 FAMOUS SPIRITS             -->
+    <!-- ========================================================= -->
+    <div class="scene-plate" id="scene-dining">
+      <div class="fog-layer fog-2"></div>
+      <!-- Warm candlelight flicker effects mapped over chandeliers & table candelabra -->
+      <div class="chandelier-flicker"></div>
+      <div class="candelabra-flicker"></div>
+
+      <!-- Dynamic living spirit animations (arcs, glowing flask, math symbols, poetry ink) -->
+      <canvas id="spirits-live-canvas"></canvas>
+
+      <div class="dining-header" id="diningHeader">
+        <h2>The Midnight Banquet</h2>
+        <p>Meet the Famous Spirits — Hover or commune with an apparition</p>
+      </div>
+
+      <!-- 1. Albert Einstein -->
+      <button class="ghost-hotspot" id="spot-einstein" aria-label="Albert Einstein" onclick="openFamousDirect('Albert Einstein')">
+        <div class="spirit-aura"></div>
+        <div class="whisper-quote">"Imagination is everything."</div>
+        <div class="ghost-badge">✦ Albert Einstein</div>
+      </button>
+
+      <!-- 2. Cleopatra -->
+      <button class="ghost-hotspot" id="spot-cleopatra" aria-label="Cleopatra" onclick="openFamousDirect('Cleopatra')">
+        <div class="spirit-aura"></div>
+        <div class="whisper-quote">"I will not be triumphed over."</div>
+        <div class="ghost-badge">✦ Cleopatra</div>
+      </button>
+
+      <!-- 3. William Shakespeare -->
+      <button class="ghost-hotspot" id="spot-shakespeare" aria-label="William Shakespeare" onclick="openFamousDirect('William Shakespeare')">
+        <div class="spirit-aura"></div>
+        <div class="whisper-quote">"We are such stuff as dreams are made on."</div>
+        <div class="ghost-badge">✦ William Shakespeare</div>
+      </button>
+
+      <!-- 4. Marie Curie -->
+      <button class="ghost-hotspot" id="spot-curie" aria-label="Marie Curie" onclick="openFamousDirect('Marie Curie')">
+        <div class="spirit-aura"></div>
+        <div class="whisper-quote">"Be less curious about people and more about ideas."</div>
+        <div class="ghost-badge">✦ Marie Curie</div>
+      </button>
+
+      <!-- 5. Nikola Tesla -->
+      <button class="ghost-hotspot" id="spot-tesla" aria-label="Nikola Tesla" onclick="openFamousDirect('Nikola Tesla')">
+        <div class="spirit-aura"></div>
+        <div class="whisper-quote">"The present is theirs; the future is mine."</div>
+        <div class="ghost-badge">✦ Nikola Tesla</div>
+      </button>
+
+      <!-- Bottom Quick Selector Dock -->
+      <div class="dining-dock" id="diningDock">
+        <button class="dock-chip" onclick="openFamousDirect('Albert Einstein')">Einstein</button>
+        <button class="dock-chip" onclick="openFamousDirect('Cleopatra')">Cleopatra</button>
+        <button class="dock-chip" onclick="openFamousDirect('William Shakespeare')">Shakespeare</button>
+        <button class="dock-chip" onclick="openFamousDirect('Marie Curie')">Curie</button>
+        <button class="dock-chip" onclick="openFamousDirect('Nikola Tesla')">Tesla</button>
+      </div>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- ACT 3: THE GRAVEYARD                                      -->
+    <!-- ========================================================= -->
+    <div class="scene-plate" id="scene-graveyard">
+      <div class="fog-layer fog-1"></div>
+      <div class="fog-layer fog-2"></div>
+      <canvas id="graveyard-live-canvas"></canvas>
+
+      <div class="graveyard-panel" id="graveyardPanel">
+        <h2>Haven't found your ghost yet?</h2>
+        <p>Some souls wander through memory, waiting for a name or story to call them into the moonlight.</p>
+        <div class="graveyard-choices">
+          <button class="grave-btn primary" id="btnMakeGhost" onclick="document.getElementById('mineDlg').showModal()">
+            ✦ Create your own ghost
+          </button>
+          <button class="grave-btn" id="btnSummonGhost" onclick="openSummonModal()">
+            ✦ Summon famous ghosts
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div> <!-- /camera-rig -->
+</div> <!-- /viewport-world -->
+
+<!-- Single Authentic Companion Phantom Canvas -->
+<canvas id="companion-canvas"></canvas>
+
+<!-- Optical portal flash for window crossing -->
+<div id="portal-flash"></div>
+
+<!-- Navigation Header -->
+<nav class="site-nav" aria-label="Main Navigation">
+  <a class="brand" href="#" onclick="scrollToTop(event)">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <span>Ghost Gallery</span>
+  </a>
+  <div class="nav-links">
+    <button class="nav-btn" onclick="scrollToTop()">Exterior</button>
+    <button class="nav-btn" onclick="scrollToDining()">The Banquet</button>
+    <button class="nav-btn" onclick="scrollToGraveyard()">Graveyard</button>
+  </div>
+</nav>
+
+<!-- Invisible Scroll Track that gives height to the body -->
+<div id="scroll-track"></div>
+
+<!-- Modal: Ghost Profile Dialog -->
+<dialog id="ghostCardDlg" aria-label="Spirit Profile">
+  <button class="dlg-close" aria-label="Close" onclick="this.closest('dialog').close()">✕</button>
+  <div class="ghost-card-render" id="cardAvatar"></div>
+  <div id="cardContent"></div>
+</dialog>
+
+<!-- Modal: Summon Famous Ghost -->
+<dialog id="findDlg" aria-label="Summon famous ghosts">
+  <button class="dlg-close" aria-label="Close" onclick="this.closest('dialog').close()">✕</button>
+  <h3>Summon a Famous Spirit</h3>
+  <p>Call upon any figure of history or literature. If their memory lingers, our portal will summon them to the banquet table.</p>
+  <form id="findForm">
+    <input id="findName" placeholder="e.g. Edgar Allan Poe, Frida Kahlo, Ada Lovelace" required>
+    <button class="go" type="submit">Summon</button>
+  </form>
+  <div id="status" role="status"></div>
+  <div id="findResult"></div>
+</dialog>
+
+<!-- Modal: Make Your Own Ghost -->
+<dialog id="mineDlg" aria-label="Create your own ghost">
+  <button class="dlg-close" aria-label="Close" onclick="this.closest('dialog').close()">✕</button>
+  <h3>Summon Someone You Loved</h3>
+  <p>Give your spirit a name and a cherished memory. They will join the eternal halls and remember you.</p>
+  <form id="createGhostForm" onsubmit="handleCreateGhost(event)">
+    <input id="createName" placeholder="Their name (e.g. Susie)" required style="margin-bottom: 10px; width: 100%;">
+    <textarea id="createStory" rows="3" placeholder="A memory, what they wore, or what made them smile..." style="width: 100%; border-radius: 10px; padding: 10px; background: #06080e; color: #fff; border: 1px solid rgba(255,255,255,0.25); font-family: inherit; margin-bottom: 12px;"></textarea>
+    <button class="go" type="submit" style="width: 100%;">Create Ghost Profile</button>
+  </form>
+  <div id="createStatus" style="margin-top: 10px; font-size: 0.95rem; color: #b0c4de;"></div>
+</dialog>
+
+<script>
+/* ==============================================================
+   STATE & DATA
+   ============================================================== */
+let ghostsData = [];
+
+const BANQUET_SPIRITS = {
+  'Albert Einstein': {
+    name: 'Albert Einstein',
+    nutshell: 'Physicist who reshaped human understanding of space, time, light and gravity.',
+    tale: 'He sits peacefully at the head of the banquet table, smiling as he watches light bend around celestial bodies, occasionally sketching equations onto the starry night.',
+    epitaph: 'Still curious, still wandering through spacetime.'
+  },
+  'Cleopatra': {
+    name: 'Cleopatra VII',
+    nutshell: 'Last active pharaoh of Ptolemaic Egypt, master diplomat, linguist, and naval strategist.',
+    tale: 'Draped in spun gold and shimmering royal gossamer, she watches with commanding intellect, carrying the eternal wisdom of the Nile across centuries.',
+    epitaph: 'I will not be triumphed over.'
+  },
+  'William Shakespeare': {
+    name: 'William Shakespeare',
+    nutshell: 'The Bard of Avon — English playwright, dramatist and poet of the human soul.',
+    tale: 'With parchment before him and quill in hand, he ponders whether all eternity is but an unwritten stage, listening to the midnight whispers of fellow spirits.',
+    epitaph: 'All the world’s a stage, and all the men and women merely players.'
+  },
+  'Marie Curie': {
+    name: 'Marie Curie',
+    nutshell: 'Pioneering chemist and physicist, first person to win two Nobel Prizes in two sciences.',
+    tale: 'She gently lifts a glowing phantom flask that shines with radiant luminescence, contemplating the invisible forces that compose our reality.',
+    epitaph: 'Nothing in life is to be feared, it is only to be understood.'
+  },
+  'Nikola Tesla': {
+    name: 'Nikola Tesla',
+    nutshell: 'Visionary inventor, engineer and futurist who gave the world alternating current and radio wireless dreams.',
+    tale: 'Arcs of crystalline blue electricity dance quietly between his fingers as he gazes into the dark sky, tuning into the vibrations of the infinite cosmos.',
+    epitaph: 'The present is theirs; the future, for which I really worked, is mine.'
+  }
+};
+
+async function loadGhosts() {
+  try {
+    const res = await fetch('/api/ghosts');
+    if (res.ok) {
+      ghostsData = await res.json();
+    }
+  } catch (err) {
+    console.warn('API ghosts running in offline mode', err);
+  }
+}
+loadGhosts();
+
+function openFamousDirect(name) {
+  const match = ghostsData.find(g => g.name.toLowerCase() === name.toLowerCase()) || BANQUET_SPIRITS[name];
+  if (!match) return;
+
+  const dlg = document.getElementById('ghostCardDlg');
+  const avatar = document.getElementById('cardAvatar');
+  const content = document.getElementById('cardContent');
+
+  avatar.innerHTML = match.big || `<svg viewBox="0 0 120 150" style="width: 120px; height: 150px;"><path d="M60 15 C35 15 22 35 22 60 L22 135 L34 125 L46 135 L60 125 L74 135 L86 125 L98 135 L98 60 C98 35 85 15 60 15 Z" fill="rgba(210,230,255,0.35)" stroke="rgba(255,255,255,0.7)" stroke-width="2"/><ellipse cx="48" cy="56" rx="4" ry="6" fill="#000"/><ellipse cx="72" cy="56" rx="4" ry="6" fill="#000"/></svg>`;
+
+  content.innerHTML = `
+    <h3>${match.name}</h3>
+    <p style="font-weight: 500; color: #e0e6f5;">${match.nutshell || ''}</p>
+    <p style="margin-top: 10px; color: #b8c4d8;">${match.tale || ''}</p>
+    <p class="epi">"${match.epitaph || ''}"</p>
+  `;
+
+  dlg.showModal();
+}
+
+function openSummonModal() {
+  document.getElementById('status').textContent = '';
+  document.getElementById('findResult').innerHTML = '';
+  const dlg = document.getElementById('findDlg');
+  dlg.showModal();
+  document.getElementById('findName').focus();
+}
+
+document.getElementById('findForm').onsubmit = async (e) => {
+  e.preventDefault();
+  const st = document.getElementById('status');
+  const name = document.getElementById('findName').value.trim();
+  st.textContent = `Summoning ${name} from beyond the veil…`;
+
+  try {
+    const r = await fetch('/api/summon', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name })
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.detail || 'Could not reach the spirit.');
+    st.textContent = '';
+    document.getElementById('findDlg').close();
+    await loadGhosts();
+    openFamousDirect(d.name);
+  } catch (err) {
+    st.textContent = err.message;
+  }
+};
+
+function handleCreateGhost(e) {
+  e.preventDefault();
+  const name = document.getElementById('createName').value.trim();
+  const st = document.getElementById('createStatus');
+  st.innerHTML = `<span style="color:#7fffd4">✦ Welcome, ${name}. Your memory now haunts this sanctuary forever.</span>`;
+  setTimeout(() => {
+    document.getElementById('mineDlg').close();
+    openFamousDirect(name) || alert(`Spirit ${name} created and saved in memory.`);
+  }, 1200);
+}
+
+/* ==============================================================
+   COMPANION PHANTOM (FOLLOWS CURSOR WITHOUT MOVING BACKGROUND)
+   ============================================================== */
+const compCanvas = document.getElementById('companion-canvas');
+const compCtx = compCanvas.getContext('2d');
+let cw = 0, ch = 0;
+
+function resizeAllCanvases() {
+  cw = compCanvas.width = window.innerWidth;
+  ch = compCanvas.height = window.innerHeight;
+
+  const sc = document.getElementById('spirits-live-canvas');
+  if (sc) { sc.width = window.innerWidth; sc.height = window.innerHeight; }
+
+  const gc = document.getElementById('graveyard-live-canvas');
+  if (gc) { gc.width = window.innerWidth; gc.height = window.innerHeight; }
+}
+resizeAllCanvases();
+window.addEventListener('resize', resizeAllCanvases);
+
+const phantomSprite = new Image();
+phantomSprite.src = '/static/img/Phantom.png';
+let spriteLoaded = false;
+phantomSprite.onload = () => { spriteLoaded = true; };
+
+const mouse = { x: window.innerWidth * 0.5, y: window.innerHeight * 0.5, vx: 0, vy: 0 };
+window.addEventListener('pointermove', (e) => {
+  mouse.vx = e.clientX - mouse.x;
+  mouse.vy = e.clientY - mouse.y;
+  mouse.x = e.clientX;
+  mouse.y = e.clientY;
+});
+
+const companion = {
+  x: mouse.x - 30,
+  y: mouse.y - 20,
+  vx: 0,
+  vy: 0,
+  driftAngle: 0,
+  popped: false
+};
+
+const popSparks = [];
+const trailMotes = [];
+
+function drawSingleCompanion(t, extVis) {
+  compCtx.clearRect(0, 0, cw, ch);
+
+  if (extVis <= 0.01) return;
+
+  if (extVis < 0.72 && !companion.popped) {
+    companion.popped = true;
+    for (let i = 0; i < 35; i++) {
+      const ang = Math.random() * Math.PI * 2;
+      const spd = 2.0 + Math.random() * 6.0;
+      popSparks.push({
+        x: companion.x,
+        y: companion.y,
+        vx: Math.cos(ang) * spd,
+        vy: Math.sin(ang) * spd - 1.5,
+        alpha: 1.0,
+        size: 1.5 + Math.random() * 3.5,
+        color: Math.random() > 0.4 ? 'rgba(235, 245, 255,' : 'rgba(180, 215, 255,'
+      });
+    }
+  } else if (extVis >= 0.72) {
+    companion.popped = false;
+  }
+
+  if (!companion.popped && Math.random() < 0.35) {
+    trailMotes.push({
+      x: companion.x + (Math.random() - 0.5) * 20,
+      y: companion.y + 25 + Math.random() * 15,
+      vx: (Math.random() - 0.5) * 0.8,
+      vy: 0.6 + Math.random() * 1.2,
+      size: 3 + Math.random() * 6,
+      alpha: 0.45 * extVis
+    });
+  }
+
+  for (let i = trailMotes.length - 1; i >= 0; i--) {
+    const m = trailMotes[i];
+    m.x += m.vx;
+    m.y += m.vy;
+    m.alpha *= 0.94;
+    m.size *= 1.02;
+
+    const g = compCtx.createRadialGradient(m.x, m.y, 0, m.x, m.y, m.size);
+    g.addColorStop(0, `rgba(220, 235, 255, ${m.alpha})`);
+    g.addColorStop(1, `rgba(180, 210, 255, 0)`);
+    compCtx.fillStyle = g;
+    compCtx.beginPath();
+    compCtx.arc(m.x, m.y, m.size, 0, Math.PI * 2);
+    compCtx.fill();
+
+    if (m.alpha < 0.01) trailMotes.splice(i, 1);
+  }
+
+  if (!companion.popped) {
+    companion.driftAngle += 0.025;
+    const targetX = mouse.x + Math.sin(companion.driftAngle) * 28 - 25;
+    const targetY = mouse.y + Math.cos(companion.driftAngle * 1.4) * 16 - 30;
+
+    companion.vx += (targetX - companion.x) * 0.042;
+    companion.vy += (targetY - companion.y) * 0.042;
+    companion.vx *= 0.87;
+    companion.vy *= 0.87;
+    companion.x += companion.vx;
+    companion.y += companion.vy;
+
+    const alpha = extVis * 0.92;
+    const PW = 110;
+    const PH = 78;
+
+    compCtx.save();
+    compCtx.translate(companion.x, companion.y);
+
+    const tilt = Math.max(-0.25, Math.min(0.25, companion.vx * 0.018));
+    compCtx.rotate(tilt);
+
+    const aura = compCtx.createRadialGradient(0, 0, 8, 0, 0, 75);
+    aura.addColorStop(0, `rgba(240, 248, 255, ${alpha * 0.55})`);
+    aura.addColorStop(0.45, `rgba(180, 215, 255, ${alpha * 0.25})`);
+    aura.addColorStop(1, `rgba(140, 190, 255, 0)`);
+    compCtx.fillStyle = aura;
+    compCtx.beginPath();
+    compCtx.arc(0, 0, 75, 0, Math.PI * 2);
+    compCtx.fill();
+
+    if (spriteLoaded) {
+      compCtx.globalAlpha = alpha;
+      const STRIPS = 18;
+      const sh = phantomSprite.naturalHeight / STRIPS;
+      const dh = PH / STRIPS;
+
+      for (let s = 0; s < STRIPS; s++) {
+        const factor = s / STRIPS;
+        const wave = Math.pow(factor, 1.4) * (
+          10 * Math.sin(t * 1.8 + s * 0.35) +
+          5 * Math.sin(t * 3.2 + s * 0.2)
+        ) + (companion.vx * -0.4 * factor);
+
+        const w = PW * (1 + 0.04 * factor * Math.sin(t * 2.1 + s * 0.25));
+        compCtx.drawImage(
+          phantomSprite,
+          0, s * sh, phantomSprite.naturalWidth, sh + 1,
+          -w * 0.5 + wave, (s * dh) - PH * 0.5, w, dh + 1
+        );
+      }
+    } else {
+      compCtx.fillStyle = `rgba(235, 245, 255, ${alpha * 0.75})`;
+      compCtx.beginPath();
+      compCtx.arc(0, -10, 20, 0, Math.PI * 2);
+      compCtx.fill();
+    }
+
+    compCtx.restore();
+  }
+
+  for (let i = popSparks.length - 1; i >= 0; i--) {
+    const p = popSparks[i];
+    p.x += p.vx;
+    p.y += p.vy;
+    p.vx *= 0.94;
+    p.vy *= 0.94;
+    p.alpha *= 0.92;
+
+    compCtx.fillStyle = `${p.color} ${p.alpha})`;
+    compCtx.beginPath();
+    compCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    compCtx.fill();
+
+    if (p.alpha < 0.02) popSparks.splice(i, 1);
+  }
+}
+
+/* ==============================================================
+   LIVING SPIRIT EFFECTS IN THE DINING HALL
+   ============================================================== */
+const spiritCanvas = document.getElementById('spirits-live-canvas');
+const sctx = spiritCanvas.getContext('2d');
+
+// Particles for Marie Curie's glowing radium flask
+const radiumParticles = [];
+// Sparks for Tesla's fingertips
+const teslaSparks = [];
+// Math symbols for Einstein
+const einsteinSymbols = ['E=mc²', 'λ', 'ℏ', 'g_μν', 'c', 'dt'];
+const einsteinParticles = [];
+// Gold poetry ink for Shakespeare
+const poetryParticles = [];
+
+function drawLivingSpirits(t, diningVis) {
+  sctx.clearRect(0, 0, cw, ch);
+  if (diningVis < 0.15) return;
+
+  const w = cw;
+  const h = ch;
+  const alpha = diningVis;
+
+  /* 1. MARIE CURIE'S RADIANT RADIUM FLASK (x: ~66.9%, y: ~48.7%) */
+  const flaskX = w * 0.669;
+  const flaskY = h * 0.487;
+
+  // Pulsating aqua/cyan aura
+  const flaskPulse = 0.8 + 0.2 * Math.sin(t * 3.5);
+  const fg = sctx.createRadialGradient(flaskX, flaskY, 2, flaskX, flaskY, 45 * flaskPulse);
+  fg.addColorStop(0, `rgba(100, 255, 218, ${0.75 * alpha})`);
+  fg.addColorStop(0.35, `rgba(64, 224, 208, ${0.35 * alpha})`);
+  fg.addColorStop(1, 'rgba(64, 224, 208, 0)');
+  sctx.fillStyle = fg;
+  sctx.beginPath();
+  sctx.arc(flaskX, flaskY, 45 * flaskPulse, 0, Math.PI * 2);
+  sctx.fill();
+
+  // Ascending luminescence vapor motes
+  if (Math.random() < 0.45) {
+    radiumParticles.push({
+      x: flaskX + (Math.random() - 0.5) * 12,
+      y: flaskY - 6,
+      vx: (Math.random() - 0.5) * 0.6,
+      vy: -0.8 - Math.random() * 1.4,
+      size: 1.5 + Math.random() * 2.5,
+      alpha: 0.9 * alpha
+    });
+  }
+  for (let i = radiumParticles.length - 1; i >= 0; i--) {
+    const p = radiumParticles[i];
+    p.x += p.vx;
+    p.y += p.vy;
+    p.alpha *= 0.96;
+    sctx.fillStyle = `rgba(130, 255, 225, ${p.alpha})`;
+    sctx.beginPath();
+    sctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    sctx.fill();
+    if (p.alpha < 0.02) radiumParticles.splice(i, 1);
+  }
+
+  /* 2. NIKOLA TESLA'S ELECTRIC ARCS (x: ~83.5%, y: ~53.0%) */
+  const teslaX = w * 0.835;
+  const teslaY = h * 0.530;
+
+  // Occasional lightning arc between his fingers
+  if (Math.random() < 0.28) {
+    sctx.save();
+    sctx.strokeStyle = `rgba(180, 230, 255, ${0.85 * alpha})`;
+    sctx.lineWidth = 1.2;
+    sctx.shadowColor = '#80d4ff';
+    sctx.shadowBlur = 8;
+    sctx.beginPath();
+    let cx = teslaX - 18 + Math.random() * 6;
+    let cy = teslaY - 10 + Math.random() * 6;
+    sctx.moveTo(cx, cy);
+    for (let j = 0; j < 4; j++) {
+      cx += (Math.random() - 0.5) * 14;
+      cy += (Math.random() - 0.5) * 14;
+      sctx.lineTo(cx, cy);
+    }
+    sctx.stroke();
+    sctx.restore();
+  }
+
+  // Electrical spark motes
+  if (Math.random() < 0.3) {
+    teslaSparks.push({
+      x: teslaX + (Math.random() - 0.5) * 24,
+      y: teslaY + (Math.random() - 0.5) * 20,
+      vx: (Math.random() - 0.5) * 2.2,
+      vy: (Math.random() - 0.5) * 2.2,
+      size: 1.2 + Math.random() * 1.8,
+      alpha: 1.0 * alpha
+    });
+  }
+  for (let i = teslaSparks.length - 1; i >= 0; i--) {
+    const s = teslaSparks[i];
+    s.x += s.vx;
+    s.y += s.vy;
+    s.alpha *= 0.91;
+    sctx.fillStyle = `rgba(160, 220, 255, ${s.alpha})`;
+    sctx.beginPath();
+    sctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+    sctx.fill();
+    if (s.alpha < 0.02) teslaSparks.splice(i, 1);
+  }
+
+  /* 3. ALBERT EINSTEIN'S SPACETIME EQUATIONS (x: ~23.5%, y: ~57.5%) */
+  const einX = w * 0.235;
+  const einY = h * 0.575;
+
+  if (Math.random() < 0.08) {
+    einsteinParticles.push({
+      x: einX + (Math.random() - 0.5) * 20,
+      y: einY - 5,
+      vx: (Math.random() - 0.5) * 0.5,
+      vy: -0.6 - Math.random() * 0.8,
+      text: einsteinSymbols[Math.floor(Math.random() * einsteinSymbols.length)],
+      alpha: 0.85 * alpha
+    });
+  }
+  sctx.save();
+  sctx.font = '13px "Cormorant Garamond", serif';
+  for (let i = einsteinParticles.length - 1; i >= 0; i--) {
+    const ep = einsteinParticles[i];
+    ep.x += ep.vx;
+    ep.y += ep.vy;
+    ep.alpha *= 0.97;
+    sctx.fillStyle = `rgba(195, 225, 255, ${ep.alpha})`;
+    sctx.shadowColor = 'rgba(180, 215, 255, 0.4)';
+    sctx.shadowBlur = 6;
+    sctx.fillText(ep.text, ep.x, ep.y);
+    if (ep.alpha < 0.02) einsteinParticles.splice(i, 1);
+  }
+  sctx.restore();
+
+  /* 4. WILLIAM SHAKESPEARE'S GOLDEN POETIC INK (x: ~48.8%, y: ~48.5%) */
+  const shakX = w * 0.488;
+  const shakY = h * 0.485;
+
+  if (Math.random() < 0.35) {
+    poetryParticles.push({
+      x: shakX + (Math.random() - 0.5) * 16,
+      y: shakY + 12 + Math.random() * 8,
+      vx: (Math.random() - 0.5) * 0.4,
+      vy: -0.4 - Math.random() * 0.7,
+      size: 1 + Math.random() * 2,
+      alpha: 0.8 * alpha
+    });
+  }
+  for (let i = poetryParticles.length - 1; i >= 0; i--) {
+    const pp = poetryParticles[i];
+    pp.x += pp.vx;
+    pp.y += pp.vy;
+    pp.alpha *= 0.96;
+    sctx.fillStyle = `rgba(240, 215, 140, ${pp.alpha})`;
+    sctx.beginPath();
+    sctx.arc(pp.x, pp.y, pp.size, 0, Math.PI * 2);
+    sctx.fill();
+    if (pp.alpha < 0.02) poetryParticles.splice(i, 1);
+  }
+
+  /* 5. CLEOPATRA'S SHIMMERING GOLDEN VEIL & CROWN (x: ~30.5%, y: ~41.5%) */
+  const cleoX = w * 0.305;
+  const cleoY = h * 0.415;
+  const cleoPulse = 0.85 + 0.15 * Math.sin(t * 2.2);
+  const cg = sctx.createRadialGradient(cleoX, cleoY, 4, cleoX, cleoY, 35 * cleoPulse);
+  cg.addColorStop(0, `rgba(255, 220, 110, ${0.45 * alpha})`);
+  cg.addColorStop(0.5, `rgba(218, 165, 32, ${0.2 * alpha})`);
+  cg.addColorStop(1, 'rgba(218, 165, 32, 0)');
+  sctx.fillStyle = cg;
+  sctx.beginPath();
+  sctx.arc(cleoX, cleoY, 35 * cleoPulse, 0, Math.PI * 2);
+  sctx.fill();
+}
+
+/* ==============================================================
+   LIVING GRAVEYARD WILL-O'-THE-WISPS & DYNAMIC FOG
+   ============================================================== */
+const graveCanvas = document.getElementById('graveyard-live-canvas');
+const gctx = graveCanvas.getContext('2d');
+
+// Floating will-o'-the-wisps (blue spirit lights that drift and react to mouse)
+const wisps = [
+  { x: 0.25, y: 0.75, ox: 0, oy: 0, vx: 0, vy: 0, phase: 0, r: 8, color: '140, 205, 255' },
+  { x: 0.72, y: 0.68, ox: 0, oy: 0, vx: 0, vy: 0, phase: 2.1, r: 10, color: '120, 235, 220' },
+  { x: 0.46, y: 0.82, ox: 0, oy: 0, vx: 0, vy: 0, phase: 4.2, r: 7, color: '170, 190, 255' },
+  { x: 0.88, y: 0.78, ox: 0, oy: 0, vx: 0, vy: 0, phase: 1.3, r: 9, color: '130, 210, 255' }
+];
+
+function drawLivingGraveyard(t, graveVis) {
+  gctx.clearRect(0, 0, cw, ch);
+  if (graveVis < 0.1) return;
+
+  const w = cw;
+  const h = ch;
+  const alpha = graveVis;
+
+  wisps.forEach(wisp => {
+    // Gentle floating figure-8 motion
+    const baseX = wisp.x * w + Math.sin(t * 0.8 + wisp.phase) * 35;
+    const baseY = wisp.y * h + Math.cos(t * 1.2 + wisp.phase) * 18;
+
+    // Reacts to mouse: drifts away if cursor comes near!
+    const dx = baseX + wisp.ox - mouse.x;
+    const dy = baseY + wisp.oy - mouse.y;
+    const dist = Math.hypot(dx, dy);
+
+    if (dist < 180 && dist > 0) {
+      const force = (1 - dist / 180) * 3.5;
+      wisp.vx += (dx / dist) * force;
+      wisp.vy += (dy / dist) * force;
+    }
+    wisp.vx *= 0.92;
+    wisp.vy *= 0.92;
+    wisp.ox = (wisp.ox + wisp.vx) * 0.97;
+    wisp.oy = (wisp.oy + wisp.vy) * 0.97;
+
+    const wx = baseX + wisp.ox;
+    const wy = baseY + wisp.oy;
+
+    // Outer wisp glow
+    const pulse = 0.85 + 0.15 * Math.sin(t * 3 + wisp.phase);
+    const rad = wisp.r * 5 * pulse;
+    const wg = gctx.createRadialGradient(wx, wy, 1, wx, wy, rad);
+    wg.addColorStop(0, `rgba(${wisp.color}, ${0.85 * alpha})`);
+    wg.addColorStop(0.35, `rgba(${wisp.color}, ${0.35 * alpha})`);
+    wg.addColorStop(1, `rgba(${wisp.color}, 0)`);
+
+    gctx.fillStyle = wg;
+    gctx.beginPath();
+    gctx.arc(wx, wy, rad, 0, Math.PI * 2);
+    gctx.fill();
+
+    // Intense inner core
+    gctx.fillStyle = `rgba(255, 255, 255, ${0.9 * alpha})`;
+    gctx.beginPath();
+    gctx.arc(wx, wy, wisp.r * 0.45, 0, Math.PI * 2);
+    gctx.fill();
+  });
+}
+
+/* ==============================================================
+   3D CAMERA FLIGHT — TIED STRICTLY TO SCROLL (NO HOVER TILTING)
+   ============================================================== */
+const cameraRig = document.getElementById('camera-rig');
+const sceneExterior = document.getElementById('scene-exterior');
+const sceneDining = document.getElementById('scene-dining');
+const sceneGraveyard = document.getElementById('scene-graveyard');
+const portalFlash = document.getElementById('portal-flash');
+const heroCard = document.getElementById('heroCard');
+const scrollIndicator = document.getElementById('scrollIndicator');
+const diningHeader = document.getElementById('diningHeader');
+const diningDock = document.getElementById('diningDock');
+const graveyardPanel = document.getElementById('graveyardPanel');
+
+let currentProgress = 0;
+let targetProgress = 0;
+
+function updateScrollProgress() {
+  const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+  targetProgress = maxScroll > 0 ? Math.min(1, Math.max(0, window.scrollY / maxScroll)) : 0;
+}
+window.addEventListener('scroll', updateScrollProgress, { passive: true });
+updateScrollProgress();
+
+function scrollToTop(e) {
+  if (e) e.preventDefault();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function scrollToDining() {
+  const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+  window.scrollTo({ top: maxScroll * 0.46, behavior: 'smooth' });
+}
+function scrollToGraveyard() {
+  const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+  window.scrollTo({ top: maxScroll * 0.95, behavior: 'smooth' });
+}
+
+/* Main Animation Loop */
+let lastT = performance.now();
+function animate() {
+  const now = performance.now();
+  const t = now / 1000;
+  lastT = now;
+
+  // Damped smooth progress interpolation
+  currentProgress += (targetProgress - currentProgress) * 0.082;
+  const p = currentProgress;
+
+  /* -------------------------------------------------------------
+     ACT 1 -> ACT 2: Flight up the cliff into the Castle Window
+     Progress 0.0 to 0.36
+     ------------------------------------------------------------- */
+  if (p < 0.40) {
+    sceneExterior.style.display = 'block';
+
+    const zoomP = Math.min(1, p / 0.30); // 0 -> 1
+    const scale = 1 + Math.pow(zoomP, 2.6) * 11.8;
+    sceneExterior.style.transform = `scale(${scale.toFixed(4)})`;
+
+    // Physical 3D angles derived strictly from flight trajectory (NO mouse tilt!)
+    let camPitch = 0;
+    let camYaw = 0;
+    let camRoll = 0;
+
+    if (zoomP < 0.6) {
+      const f = zoomP / 0.6;
+      camPitch = -4.0 - (f * 5.5); // pitches upward to ascend cliff
+      camYaw = f * 8.5; // turns towards castle on the right
+      camRoll = f * 1.6; // slight aerodynamic banking
+    } else {
+      const f = (zoomP - 0.6) / 0.4;
+      camPitch = -9.5 + (f * 9.5); // levels off to 0deg at window
+      camYaw = 8.5 - (f * 8.5); // levels perpendicular to window
+      camRoll = 1.6 - (f * 1.6);
+    }
+
+    cameraRig.style.transform = `rotateX(${camPitch.toFixed(2)}deg) rotateY(${camYaw.toFixed(2)}deg) rotateZ(${camRoll.toFixed(2)}deg)`;
+
+    // Fade out Act 1 hero card
+    const textAlpha = Math.max(0, 1 - (p / 0.11));
+    heroCard.style.opacity = textAlpha.toFixed(3);
+    heroCard.style.transform = `translate(-50%, calc(-50% - ${(p * 80).toFixed(0)}px)) scale(${(1 - p * 0.6).toFixed(3)})`;
+    heroCard.style.pointerEvents = textAlpha > 0.05 ? 'auto' : 'none';
+    scrollIndicator.style.opacity = textAlpha.toFixed(3);
+
+    // Cross-fade portal flash at window threshold
+    let flashAlpha = 0;
+    if (p > 0.20 && p < 0.33) {
+      flashAlpha = Math.sin(((p - 0.20) / 0.13) * Math.PI);
+    }
+    portalFlash.style.opacity = (flashAlpha * 0.78).toFixed(3);
+
+    const extAlpha = Math.max(0, 1 - Math.max(0, (p - 0.22) / 0.10));
+    sceneExterior.style.opacity = extAlpha.toFixed(3);
+
+  } else {
+    sceneExterior.style.display = 'none';
+    portalFlash.style.opacity = '0';
+  }
+
+  /* -------------------------------------------------------------
+     ACT 2: Entering & Communing in the Gothic Dining Hall
+     Progress 0.19 to 0.78
+     ------------------------------------------------------------- */
+  let diningVis = 0;
+  if (p >= 0.19 && p <= 0.78) {
+    sceneDining.style.display = 'block';
+
+    if (p < 0.36) {
+      // Breaching in through the high gothic window on the left
+      const inP = (p - 0.19) / 0.17; // 0 -> 1
+      const dinScale = 3.5 - (inP * 2.5); // 3.5 -> 1.0
+      sceneDining.style.transform = `scale(${dinScale.toFixed(4)})`;
+      diningVis = Math.min(1, inP * 1.6);
+      sceneDining.style.opacity = diningVis.toFixed(3);
+
+      const pitch = (1 - inP) * 4.5;
+      const yaw = (1 - inP) * -9.0;
+      cameraRig.style.transform = `rotateX(${pitch.toFixed(2)}deg) rotateY(${yaw.toFixed(2)}deg)`;
+
+      sceneDining.classList.remove('active');
+      diningHeader.style.opacity = '0';
+      diningDock.style.opacity = '0';
+    } else if (p >= 0.36 && p <= 0.62) {
+      // Stable grand banquet experience (Completely rock solid!)
+      sceneDining.style.transform = `scale(1.0)`;
+      sceneDining.style.opacity = '1';
+      diningVis = 1;
+      sceneDining.classList.add('active');
+      cameraRig.style.transform = `rotateX(0deg) rotateY(0deg) rotateZ(0deg)`;
+
+      diningHeader.style.opacity = '1';
+      diningDock.style.opacity = '1';
+    } else {
+      // Exiting through the back dining window down toward the graveyard
+      const outP = (p - 0.62) / 0.14; // 0 -> 1
+      const exitScale = 1.0 + Math.pow(outP, 2.0) * 4.8;
+      sceneDining.style.transform = `scale(${exitScale.toFixed(4)})`;
+      diningVis = Math.max(0, 1 - outP);
+      sceneDining.style.opacity = diningVis.toFixed(3);
+
+      const pitch = outP * 16.0; // Downward pitch plunging toward graveyard
+      const yaw = outP * -8.0;
+      cameraRig.style.transform = `rotateX(${pitch.toFixed(2)}deg) rotateY(${yaw.toFixed(2)}deg)`;
+
+      sceneDining.classList.remove('active');
+      diningHeader.style.opacity = Math.max(0, 1 - outP * 2).toFixed(3);
+      diningDock.style.opacity = Math.max(0, 1 - outP * 2).toFixed(3);
+    }
+  } else {
+    sceneDining.style.display = 'none';
+    sceneDining.classList.remove('active');
+  }
+
+  /* -------------------------------------------------------------
+     ACT 3: The Ancient Graveyard
+     Progress 0.64 to 1.0
+     ------------------------------------------------------------- */
+  let graveVis = 0;
+  if (p >= 0.64) {
+    sceneGraveyard.style.display = 'block';
+    const graveP = (p - 0.64) / 0.30; // 0 -> 1
+
+    const graveScale = 1.3 - Math.min(1, graveP) * 0.3;
+    const graveY = (1 - Math.min(1, graveP)) * 16;
+    const pitch = (1 - Math.min(1, graveP)) * 18.0;
+
+    sceneGraveyard.style.transform = `scale(${graveScale.toFixed(4)}) translateY(${graveY.toFixed(2)}vh)`;
+    graveVis = Math.min(1, graveP * 1.35);
+    sceneGraveyard.style.opacity = graveVis.toFixed(3);
+    cameraRig.style.transform = `rotateX(${pitch.toFixed(2)}deg) rotateY(0deg)`;
+
+    if (p >= 0.78) {
+      sceneGraveyard.classList.add('active');
+      graveyardPanel.style.opacity = '1';
+    } else {
+      sceneGraveyard.classList.remove('active');
+      graveyardPanel.style.opacity = Math.max(0, (p - 0.68) / 0.10).toFixed(3);
+    }
+  } else {
+    sceneGraveyard.style.display = 'none';
+    sceneGraveyard.classList.remove('active');
+  }
+
+  // Draw living entities
+  const extVis = p < 0.32 ? Math.max(0, 1 - p / 0.24) : 0;
+  drawSingleCompanion(t, extVis);
+  drawLivingSpirits(t, diningVis);
+  drawLivingGraveyard(t, graveVis);
+
+  requestAnimationFrame(animate);
+}
+requestAnimationFrame(animate);
+</script>
+
+</body>
+</html>

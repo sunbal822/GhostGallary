@@ -1,0 +1,50 @@
+[
+ {
+  "slug": "ada-lovelace",
+  "kind": "famous",
+  "visibility": "public",
+  "token": null,
+  "profile": {
+   "outfit": "gown",
+   "outfitPattern": "floral",
+   "outfitColor": "#a3856c",
+   "hairStyle": "long",
+   "hairColor": "brown",
+   "heldItem": "book",
+   "accessory": "none",
+   "auraColor": "#f2e8d5",
+   "movement": "pace",
+   "nutshell": "Ada Lovelace was a brilliant mathematician and writer, celebrated for her work on Charles Babbage's Analytical Engine. She foresaw the machine's potential beyond simple calculations, earning her the title of the first computer programmer.",
+   "tale": "Now a gentle spirit, Ada spends her afterlife drifting through libraries and workshops, occasionally pausing to nudge a curious mind towards a new equation. She’s often found silently observing inventors, leaving faint trails of shimmering numbers in her wake, and occasionally whispering helpful suggestions to those struggling with a particularly tricky algorithm. Ada enjoys observing the evolution of computing and is delighted by the possibilities she helped to inspire.",
+   "epitaph": "A mind that saw beyond the numbers, into a future of endless possibility.",
+   "chatPersona": "I find myself quite fascinated by your world! Do tell, how have the machines evolved? I do hope they are being put to good use, expanding knowledge and creativity.",
+   "name": "Ada Lovelace"
+  },
+  "context": "Augusta Ada King, Countess of Lovelace, also known as Ada Lovelace, was an English mathematician and writer chiefly known for work on Charles Babbage's proposed mechanical general-purpose computer, the analytical engine. She was the first to recognise the machine had applications beyond pure calculation. Lovelace is often considered the first computer programmer.",
+  "created": 1793439591.4684227
+ },
+ {
+  "slug": "susie-629b",
+  "kind": "user",
+  "visibility": "private",
+  "token": "RKeQgLeBLeNUiA",
+  "profile": {
+   "outfit": "sweater",
+   "outfitPattern": "solid",
+   "outfitColor": "#d32e2e",
+   "hairStyle": "short",
+   "hairColor": "grey",
+   "heldItem": "pie",
+   "accessory": "none",
+   "auraColor": "#f0e68c",
+   "movement": "sway",
+   "nutshell": "Susie was a beloved grandmother, known for her warmth and kindness. She filled our lives with love and delicious treats.",
+   "tale": "Now, as a gentle spirit, Susie continues her pumpkin pie baking, but for the clouds! She floats amongst them, occasionally dropping a warm, spiced slice onto a lucky dreamer below. Sometimes, she’ll arrange the cloud shapes into comforting patterns, a silent reminder of her love and a sprinkle of autumn sweetness for all.",
+   "epitaph": "Her warmth and love will forever linger in our hearts.",
+   "chatPersona": "Susie speaks softly and kindly, offering gentle encouragement and reminiscing about simple joys. She loves to share stories and always has a warm smile, even if you can’t quite see it.",
+   "name": "susie"
+  },
+  "context": "she was my grandmother. she was the most sweet and warm peron. she always had this red sweter on and whpuld make the most delicious pumpkin pies. so naturaly i miss her like hell this time of the year",
+  "created": 1793439831.6095676
+ }
+]
